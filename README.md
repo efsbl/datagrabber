@@ -7,5 +7,5 @@ You can pass the number of goroutines (workers) as an argument. It defaults to 1
 Example usage (should maintain the ids file structure)
 ```bash
 $ go build
-$ ./endpoint-comparator -w 8
+$ ./datagrabber -w 8
 ```
