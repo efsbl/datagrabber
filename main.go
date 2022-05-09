@@ -16,7 +16,6 @@ import (
 const BASE_URL = "https://jsonplaceholder.typicode.com/users"
 
 func main() {
-
 	workers := flag.Int("w", 1, "number of goroutines")
 
 	flag.Parse()
@@ -27,8 +26,12 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(*workers)
-
 	results := make(chan TaskResponse)
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
 	for i := 0; i < *workers; i++ {
 		go func() {
 			for id := range tasks {
@@ -38,14 +41,7 @@ func main() {
 		}()
 	}
 
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	done := make(chan bool)
-	go WriteData(results, done)
-	<-done
+	WriteData(results)
 
 }
 
@@ -116,7 +112,7 @@ func ReadData(tasks chan uint64) {
 	close(tasks)
 }
 
-func WriteData(results chan TaskResponse, done chan bool) {
+func WriteData(results chan TaskResponse) {
 	file, err := os.Create("users.csv")
 	if err != nil {
 		log.Fatalln("error creating file", err)
@@ -148,6 +144,4 @@ func WriteData(results chan TaskResponse, done chan bool) {
 		}
 
 	}
-
-	done <- true
 }
